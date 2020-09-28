@@ -56,12 +56,8 @@ function Sphere(props) {
       temp.push({ t, factor, speed, xFactor, yFactor, zFactor, mx: 0, my: 0 })
     }
 
-      //test
-      console.log(temp)
     return temp
   }, [count])
-  //test
-  console.log(p)
 
   // Set up state for the hovered and active state
   const [hovered, setHover] = useState(false)
@@ -73,7 +69,7 @@ function Sphere(props) {
   useFrame(() => {
     inc += 0.02;
     p.forEach((p, i) => {
-     let { t, factor, speed, xFactor, yFactor, zFactor } = p; // destruc
+     let { t, factor, speed, xFactor, yFactor, zFactor } = p;
      t = p.t += speed / 2;
      const a = Math.cos(t) + Math.sin(t * 1) / 10 + (Math.cos(t * 2));
      const b = Math.sin(t) + Math.cos(t * 2) / 10;
@@ -83,15 +79,18 @@ function Sphere(props) {
      dummy.position.set(
         (p.mx / 10) * t +  Math.sin(t * 2) * (Math.sin(inc) * 2),
         (p.mx / 10) * t +  Math.cos(t * 2) * (Math.sin(inc) * 2),
+        //(p.my / 10) * t +  Math.sin(t * 2) * (Math.cos(inc) * 2),
+        //(p.my / 10) * t +  Math.sin(t * 3) * (t * .02),
+       //(p.mx / 10) * a + xFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 1) * factor) / 10, // x
+       //(p.my / 10) * b + yFactor + Math.sin((t / 10) * factor) + (Math.cos(t * 2) * factor) / 10, // y
+       //(p.my / 10) * b + zFactor + Math.cos((t / 10) * factor) + (Math.sin(t * 3) * factor) / 10  // z
      )
      dummy.scale.set(.1, .1, .1);
      dummy.rotation.set(s * 5, s * 5, s * 5);
      dummy.updateMatrix();
-
      // And apply the matrix to the instanced item
      mesh.current.setMatrixAt(i, dummy.matrix);
     })
-
     //mesh.current.rotation.z += .01;
     mesh.current.instanceMatrix.needsUpdate = true;
   })
@@ -120,59 +119,51 @@ function Box2() {
 
 }
 
-function Obj() {
-  let time = 0;
+function Sun() {
+  const obj = [];
   const mesh = useRef();
 
-  const dummy = useMemo(() => new THREE.Object3D(), [])
-  
-  const p = [
-    { 
-      mx: -2, my: 0, color: "green" 
-    },
-    { 
-      mx: 0, my: 0, color: "red" 
-    },
-    {
-      mx: 2, my: 0, color: "blue" 
-    }
-  ];
-
   useFrame(() => { 
-    time += 0.01
-    // i will inc to size of array
-    p.forEach((p, i) => {
-      dummy.position.set(
-        p.mx, p.my
-     )
-     dummy.scale.set(.7, .7, .7);
-     dummy.rotation.set(0, time, 0)
-     dummy.updateMatrix();
-
-     // And apply the matrix to the instanced item
-     mesh.current.setMatrixAt(i, dummy.matrix)
-    })
-    mesh.current.instanceMatrix.needsUpdate = true
-    mesh.current.rotation.y += 0.01 // this 
+    mesh.current.rotation.y += 0.01
   })
 
   return (
-    <instancedMesh ref={mesh} args={[null, null, 3]}>
-      <sphereBufferGeometry attach="geometry" args={[1, 10, 10]} />
+    <mesh ref={mesh}>
+      <sphereBufferGeometry attach="geometry" args={[1, 6, 6]} />
       <meshPhongMaterial attach="material" color="yellow" />
-    </instancedMesh>
+    </mesh>
+  )
+}
+
+function Obj({position, c, size}) {
+  const mesh = useRef();
+  console.log()
+
+  useFrame(() => { 
+    mesh.current.rotation.y += 0.01
+  })
+
+  return (
+    <mesh 
+      position={[...position]}
+      ref={mesh}
+    >
+      <sphereBufferGeometry attach="geometry" args={[size, 6, 6]} />
+      <meshPhongMaterial attach="material" color={c} />
+    </mesh>
   )
 }
 
 export default function App() {
   return (
-    <Canvas 
-      colorManagement
-      camera={{ fov: 75, position: [0, 5, 0] }}
+    <Canvas colorManagement
+    camera={{ fov: 100, position: [0, 3, 0] }}
     >
-      <ambientLight intensity={3} />
-      <pointLight color="white" position={[0, 0, 0]} intensity={2.2} />
-      <Obj />
+      <ambientLight intensity={1} />
+      <pointLight position={[100, 100, 100]} intensity={2.2} />
+      <pointLight position={[-100, -100, -100]} intensity={5} color="red" />
+      <pointLight position={[10, 10, 10]} />
+      <Sun />
     </Canvas>
   )
 }
