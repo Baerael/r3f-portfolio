@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Sulphur+Point&display=swap');
+
 * {
   box-sizing: border-box;
 }
@@ -5,12 +7,34 @@
 html,
 body,
 #root {
+  font-family: 'Sulphur Point', sans-serif;
   width: 100%;
   height: 100%;
   margin: 0;
   padding: 0;
 }
-
-body {
-  background: black;
+.loading {
+  padding: 10px;
+  transform: translate3d(-50%, -50%, 0);
+  color: #8b8b8b;
 }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+  color: black;
+  background: radial-gradient(at 50% 60%, #873740 0%, #272730 40%, floralwhite 80%, #070710 100%);
+  user-select: none;
+}
+
+
+  /*
+  background: radial-gradient(at 50% 60%, #873740 0%, #272730 40%, #171720 80%, #070710 100%);
+  background: floralwhite;
+  */
+  .scrollArea {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+  }
