@@ -1,12 +1,11 @@
 import * as THREE from 'three'
-import React, { useRef, useState, useMemo, Suspense } from 'react'
+import React, { useRef, useState,useCallback, useMemo, Suspense } from 'react'
 import { Canvas, useFrame, useLoader, useThree, Dom, useResource } from 'react-three-fiber'
 import './App.css';
 import { BoxHelper, SpotLightHelper, PointLightHelper, TextureLoader, BoxBufferGeometry, BackSide } from "three"
 import { Stats, useHelper, Text } from '@react-three/drei'
 import lerp from 'lerp'
 import  bl from './bold.blob'
-import { buildQueries } from '@testing-library/react';
 
 function Plane() {
   const ref = useRef()
@@ -89,10 +88,10 @@ function Lights() {
   return (
     <>
       <ambientLight intensity={0.5} />
-      <directionalLight
+      <pointLight
         ref={ref}
         intensity={0.6}
-        position={[5, 5, 5]}
+        position={[5, 5, 10]}
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
         castShadow
@@ -100,6 +99,16 @@ function Lights() {
     </>
   )
 }
+/*
+      <directionalLight
+        ref={ref}
+        intensity={0.6}
+        position={[5, 5, 5]}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        castShadow
+      /
+*/
 
 function Box({pos}) {
   const ref = useRef()
@@ -143,29 +152,62 @@ function Build({pos, size}) {
 }
       //<meshPhongMaterial attach="material" color="floralwhite" />
 
-function View() {
+let statey = 0;
+let statex = 0;
+function Portal({mouse}) {
+  const ref = useRef()
+  useFrame(() => {
+    if(ref.current) {
+      ref.current.rotation.y = mouse.current[0] * .001 / 3.14
+      ref.current.rotation.x = mouse.current[1] * .001 / 3.14
+    }
+  })
+
+  const y = -4
   return (
-    <>
-      <Build size={[1,10,1]} pos={[-12,0,0]} />
-      <Build size={[1,10,1]} pos={[-5,0,0]} />
-      <Build size={[8,1,1]} pos={[-8,-5,0]} />
-    </>
+    <group 
+      ref={ref}
+      position={[-10, 0, 0]}
+    >
+      <Build size={[1,10,1]} pos={[-3.5, 0 ,0]} />
+      <Build size={[1,10,1]} pos={[ 3.5, 0  ,0]} />
+      <Build size={[8,1,1]}  pos={[ 0,  -5 ,0]} />
+      <Build size={[8,1,1]}  pos={[ 0,   5.5 ,0]} />
+    </group>
   )
 }
 
 
+
 export default function App() {
   const ref = useRef()
+  const mouse = useRef([0, 0])
+  const onMouseMove = useCallback(({ clientX: x, clientY: y }) => (mouse.current = [x - window.innerWidth / 2, y - window.innerHeight / 2]), [])
 
   return (
     <>
-      <Canvas shadowMap camera={{ position: [0, 0, 15] }}>
+      <Canvas 
+        shadowMap 
+        camera={{ fov: 100, position: [0, 2, 15] }}
+        onMouseMove={onMouseMove}
+      >
         <Suspense fallback={<Dom center className="loading" children="Loading..."/>}>
           <Setup />
-          <View />
+          <Portal mouse={mouse}/>
         </Suspense>
       </Canvas>
       <Stats />
     </>
   )
 }
+/*
+  return (
+    <group ref={ref}>
+      <Build size={[1,10,1]} pos={[-12, 0 + y,0]} />
+      <Build size={[1,10,1]} pos={[-5,  0 + y,0]} />
+      <Build size={[8,1,1]} pos={[-8.5,-5 + y,0]} />
+      <Build size={[8,1,1]} pos={[-8.5, 5.5 + y,0]} />
+    </group>
+  )
+}
+*/
