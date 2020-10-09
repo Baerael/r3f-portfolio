@@ -1,88 +1,33 @@
 import * as THREE from 'three'
-import React, { useRef, useState,useCallback, useMemo, Suspense } from 'react'
+import React, { useRef, useState, useEffect, useCallback, useMemo, Suspense } from 'react'
 import { Canvas, useFrame, useLoader, useThree, Dom, useResource } from 'react-three-fiber'
 import './App.css';
-import { BoxHelper, SpotLightHelper, PointLightHelper, TextureLoader, BoxBufferGeometry, BackSide } from "three"
-import { Stats, useHelper, Text } from '@react-three/drei'
+import { BoxHelper, SpotLightHelper, PointLightHelper, TextureLoader, BoxBufferGeometry, BackSide, Texture } from "three"
+import { Stats, useHelper, Text, Html } from '@react-three/drei'
 import lerp from 'lerp'
 import  bl from './bold.blob'
 
-function Plane() {
+import Portal from './Portal.js'
+import Name from './Name.js'
+
+import tx from './texture/wall.jpg'
+import galx from './texture/galx.png'
+import imgdb from './texture/imgdb.png'
+
+function Plane({s, pos, color, image}) {
   const ref = useRef()
-  const size = 40;
-
-  const x = Math.PI / -2;
-
-  console.log("box-render")
 
   return (
     <>
-      <mesh ref={ref} rotation={[0,0,0]} position={[0, 0, -2]} receiveShadow>
-        <planeBufferGeometry attach="geometry" args={[size, size + 30]} /> 
-        <meshPhongMaterial   attach="material" color="#272730" />
+      <mesh ref={ref} rotation={[0,0,0]} position={[...pos]} receiveShadow>
+        <planeBufferGeometry attach="geometry" args={[...s]} /> 
+        <meshPhongMaterial   attach="material" color={color} map={image} />
       </mesh>
     </>
   )
 }
-function Name({text, pos} ) {
-  const {s, viewport} = useThree()
-  const w = viewport.width * .008
-  console.log(w)
-
-  let time = 0;
-  const aspect = 1;
-  const size = 0.1
-  const ref = useRef()
-  const font = useLoader(THREE.FontLoader, bl)
-
-  const config = useMemo(
-    () => ({ font, size:     40, height:        0, 
-             curveSegments:  32, bevelEnabled:  true, 
-             bevelThickness: 10, bevelSize:     2, 
-             bevelOffset:     0, bevelSegments: 10 }),
-    [font]
-  )
-
-  return (
-      <mesh 
-        ref={ref}
-        position={[...pos]}
-        scale={[0.1 * w, 0.1 * w, 0.1]}
-        castShadow
-      >
-        <textGeometry attach="geometry" args={[text, config]} />
-        <meshNormalMaterial attach="material" />
-      </mesh>
-
-  )
-}
-
-function Driver() {
-  let time = 0;
-  const {size, viewport} = useThree()
-  console.log(viewport)
-  const ref = useRef()
 
 
-  useFrame(() => {
-    time += 0.01
-    const si = Math.sin(time) / 2
-    const co = Math.cos(time) / 2
-
-    ref.current.position.y = 1
-    ref.current.rotation.x = si + co
-    ref.current.rotation.y = si + co
-    ref.current.rotation.z = si + co
-    //ref.current.children[0].rotation.x = Math.sin(time)
-    //ref.current.children[1].rotation.z += 0.01
-  })
-
-  return (
-    <group ref={ref}>
-      <Name text="CONTACT"  pos={[-2, 0, 0]}/>
-    </group>
-  )
-}
 function Lights() {
   const [ref, light] = useResource()
   return (
@@ -99,84 +44,71 @@ function Lights() {
     </>
   )
 }
-/*
-      <directionalLight
-        ref={ref}
-        intensity={0.6}
-        position={[5, 5, 5]}
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        castShadow
-      /
-*/
 
-function Box({pos}) {
+function Button({pos, text, link = null}) {
+  const {viewport} = useThree()
+  const w = viewport.width
+  const max = viewport.width
+
   const ref = useRef()
-
+  const [hovered, setHover] = useState(false)
   useFrame(() => {
     ref.current.rotation.x += 0.01
     ref.current.rotation.y += 0.01
   })
 
-  return (
-    <mesh ref={ref} position={[...pos]} castShadow>
-      <octahedronBufferGeometry attach="geometry" args={[1]} />
-      <meshPhongMaterial attach="material" />
-    </mesh>
-  )
-}
 
-function Setup() {
   return (
     <>
-      <Name text="ADHES" pos={[-9,7,-2]}/>
-      <Name text="DEVELOPMENT" pos={[-2,3,0]}/>
-      <Box pos={[0,0,0]}/>
-      <Box pos={[4,0,0]}/>
-      <Plane />
-      <Lights />
+    <mesh ref={ref} 
+      position={[...pos]} 
+      //onPointerOver={(e) => setHover(true)}
+      //onPointerOut={(e) => setHover(false)}
+      onPointerOver={(e) => (document.body.style.cursor = 'pointer', setHover(true))}
+      onPointerOut={(e) => (document.body.style.cursor = '', setHover(false))}
+      castShadow
+      onClick={(e) => link ? window.open(link) : null}
+    >
+      <octahedronBufferGeometry attach="geometry" args={[1]} />
+      <meshPhongMaterial attach="material" color={hovered ? 'hotpink' : 'floralwhite'}/>
+    </mesh>
+    <Text scale={[9,9,9]} position={[pos[0] + 8,pos[1], pos[2]]} color={hovered ? 'hotpink' : 'floralwhite'}>{text}</Text>
     </>
   )
 }
 
-function Build({pos, size}) {
+function Setup({mouse}) {
+  const {size} = useThree()
+  let fontPos1 = [-9, 7, 2]
+  let fontPos2 = [-1, 3, 2]
+  let btnPos1 = [4, -1, 0]
+  let btnPos2 = [4, -4, 0]
+  let portalPos1 = [-15, 0, -6]
+  let portalPos2 = [-15, -16, -6]
+
+  if (size.width < 1250) {
+    fontPos1    = [-3, 15, -2]
+    fontPos2    = [-6, 12, -2]
+    btnPos1     = [-4, 9, -2]
+    btnPos2     = [-4, 6, -2]
+    portalPos1  = [0, -1, -6]
+    portalPos2  = [0, -15, -6]
+    //console.log(pos1)
+  }
+
   return (
-    <mesh
-      position={[...pos]}
-      castShadow
-    >
-      <boxBufferGeometry attach="geometry" args={[...size]} />
-      <meshNormalMaterial attach="material" color="floralwhite" />
-    </mesh>
+    <>
+      <Name text="ADHES" pos={fontPos1}/>
+      <Name text="DEVELOPMENT" pos={fontPos2}/>
+      <Button pos={btnPos1} text="Github" link="https://github.com/adhebadhe"/>
+      <Button pos={btnPos2} text="bendpratte@gmail.com" link="https://www.youtube.com/watch?v=HSmKiws-4NU"/>
+      <Plane s={[1000, 1000]} pos={[0, 0, -10]} color="#272730"/>
+      <Lights />
+      <Portal mouse={mouse} pos={portalPos1} image={galx} link="https://github.com/adhebadhe/galaxian"/>
+      <Portal mouse={mouse} pos={portalPos2} image={imgdb} link="https://github.com/adhebadhe/imagedb-backend"/>
+    </>
   )
 }
-      //<meshPhongMaterial attach="material" color="floralwhite" />
-
-let statey = 0;
-let statex = 0;
-function Portal({mouse}) {
-  const ref = useRef()
-  useFrame(() => {
-    if(ref.current) {
-      ref.current.rotation.y = mouse.current[0] * .001 / 3.14
-      ref.current.rotation.x = mouse.current[1] * .001 / 3.14
-    }
-  })
-
-  const y = -4
-  return (
-    <group 
-      ref={ref}
-      position={[-10, 0, 0]}
-    >
-      <Build size={[1,10,1]} pos={[-3.5, 0 ,0]} />
-      <Build size={[1,10,1]} pos={[ 3.5, 0  ,0]} />
-      <Build size={[8,1,1]}  pos={[ 0,  -5 ,0]} />
-      <Build size={[8,1,1]}  pos={[ 0,   5.5 ,0]} />
-    </group>
-  )
-}
-
 
 
 export default function App() {
@@ -188,26 +120,15 @@ export default function App() {
     <>
       <Canvas 
         shadowMap 
-        camera={{ fov: 100, position: [0, 2, 15] }}
+        camera={{ fov: 100, position: [0, 1, 15] }}
         onMouseMove={onMouseMove}
+        concurrent
       >
         <Suspense fallback={<Dom center className="loading" children="Loading..."/>}>
-          <Setup />
-          <Portal mouse={mouse}/>
+          <Setup mouse={mouse}/>
         </Suspense>
       </Canvas>
       <Stats />
     </>
   )
 }
-/*
-  return (
-    <group ref={ref}>
-      <Build size={[1,10,1]} pos={[-12, 0 + y,0]} />
-      <Build size={[1,10,1]} pos={[-5,  0 + y,0]} />
-      <Build size={[8,1,1]} pos={[-8.5,-5 + y,0]} />
-      <Build size={[8,1,1]} pos={[-8.5, 5.5 + y,0]} />
-    </group>
-  )
-}
-*/
