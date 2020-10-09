@@ -1,13 +1,13 @@
 
+//import { useLoader, useThree} from 'react-three-fiber'
+
 import * as THREE from 'three'
-import React, { useRef, useMemo } from 'react'
-import { useLoader, useThree} from 'react-three-fiber'
+import React, { useMemo } from 'react'
+import { useLoader } from 'react-three-fiber'
 import  blob from './bold.blob'
 
-function Name({text, pos} ) {
-  const {size, viewport} = useThree()
-  const w = viewport.width * .008
-  const ref = useRef()
+function Font({text, pos} ) {
+  //const {size, viewport} = useThree()
   const font = useLoader(THREE.FontLoader, blob)
 
   let [x,y,z] = pos
@@ -20,12 +20,10 @@ function Name({text, pos} ) {
     [font]
   )
 
-
   return (
     <group>
       <mesh 
         position={[x,y,z]}
-        //scale={[0.1 * w, 0.1 * w, 0.1]}
         scale={[0.04,0.04,0.04]}
         castShadow
       >
@@ -37,4 +35,4 @@ function Name({text, pos} ) {
   )
 }
 
-export default Name;
+export default Font;

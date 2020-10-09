@@ -1,7 +1,7 @@
 
-import * as THREE from 'three'
+//import * as THREE from 'three'
 import React, { useRef, useState} from 'react'
-import { useFrame, useLoader, useThree} from 'react-three-fiber'
+import { useFrame, useLoader} from 'react-three-fiber'
 import { TextureLoader } from "three"
 
 function Plane({s, pos, color, image}) {
@@ -30,10 +30,8 @@ function Build({pos, size}) {
 }
 
 function Portal({mouse, pos, image, link = null}) {
-  const {viewport, size} = useThree()
+  //const {viewport, size} = useThree()
   const img = useLoader(TextureLoader, image)
-  const w = viewport.width * 0.015
-  const h = viewport.height * 0.015
   const ref = useRef()
   const [hovered, setHover] = useState(false)
 
@@ -43,9 +41,6 @@ function Portal({mouse, pos, image, link = null}) {
       ref.current.rotation.x = mouse.current[1] * .001 / 3.14
     }
   })
-  if(size.width < 700) { 
-    //y -= 20
-  }
 
   return (
     <group 
@@ -54,8 +49,6 @@ function Portal({mouse, pos, image, link = null}) {
       scale={[1 ,1 ,1]}
       onPointerOver={(e) => (document.body.style.cursor = 'pointer', setHover(true))}
       onPointerOut={(e) => (document.body.style.cursor = '', setHover(false))}
-      //onPointerOver={(e) => setHover(true)}
-      //onPointerOut={(e) => setHover(false)}
       onClick={(e) => link ? window.open(link) : null}
     >
       <Build size={[1,10,1]}  pos={[-11.5, 0  ,0]} />
