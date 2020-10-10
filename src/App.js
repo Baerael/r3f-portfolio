@@ -16,7 +16,7 @@ export default function App() {
     <>
       <Canvas 
         shadowMap 
-        camera={{ fov: 100, position: [0, 1, 15] }}
+        camera={{ fov: 75, position: [0, 1, 15] }}
         onMouseMove={onMouseMove}
         concurrent
       >
@@ -24,7 +24,6 @@ export default function App() {
           <Setup mouse={mouse}/>
         </Suspense>
       </Canvas>
-      <Stats />
     </>
   )
 }

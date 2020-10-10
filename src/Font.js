@@ -2,15 +2,23 @@
 //import { useLoader, useThree} from 'react-three-fiber'
 
 import * as THREE from 'three'
-import React, { useMemo } from 'react'
-import { useLoader } from 'react-three-fiber'
+import React, { useRef, useMemo } from 'react'
+import { useLoader,useFrame } from 'react-three-fiber'
 import  blob from './bold.blob'
 
-function Font({text, pos} ) {
+function Font({text, pos, scale} ) {
   //const {size, viewport} = useThree()
+  const ref = useRef()
   const font = useLoader(THREE.FontLoader, blob)
 
   let [x,y,z] = pos
+  //let [x,y,z] = scale
+
+  let time = 0;
+  useFrame(() => {
+    time += 0.03
+    ref.current.position.y = y + Math.sin(time) / 3
+  })
 
   const config = useMemo(
     () => ({ font, size:     40, height:        0, 
@@ -21,10 +29,12 @@ function Font({text, pos} ) {
   )
 
   return (
-    <group>
+    <group
+    >
       <mesh 
+        ref={ref}
         position={[x,y,z]}
-        scale={[0.04,0.04,0.04]}
+        scale={[...scale]}
         castShadow
       >
         <textGeometry attach="geometry" args={[text, config]} />
